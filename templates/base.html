@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PulseTrace</title>
+    <style>
+      :root {
+        --bg: #f7f9fc;
+        --panel: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --ok: #047857;
+        --fail: #b91c1c;
+        --border: #dbe2ea;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at top right, #e8f1ff 0%, var(--bg) 45%);
+      }
+      .container {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th, td {
+        text-align: left;
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--border);
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .status-ok {
+        color: var(--ok);
+        font-weight: 600;
+      }
+      .status-fail {
+        color: var(--fail);
+        font-weight: 600;
+      }
+      a {
+        color: #1d4ed8;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="topbar">
+        <div>
+          <h2 style="margin: 0;">PulseTrace</h2>
+          <div class="muted">Network checks and diagnostics</div>
+        </div>
+        <div>
+          {% if user.is_authenticated %}
+            <span class="muted">Signed in as {{ user.username }}</span>
+            | <a href="{% url 'logout' %}">Logout</a>
+            | <a href="/admin/">Admin</a>
+          {% else %}
+            <a href="{% url 'login' %}">Login</a>
+          {% endif %}
+        </div>
+      </div>
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+  </html>

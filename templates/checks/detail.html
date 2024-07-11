@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="panel" style="margin-bottom: 16px;">
+  <h3 style="margin-top: 0;">{{ check.name }}</h3>
+  <p class="muted" style="margin-top: 0;">
+    {{ check.type|upper }} | {{ check.target }}{% if check.port %}:{{ check.port }}{% endif %}
+  </p>
+  <p>
+    Frequency: {{ check.frequency_seconds }}s |
+    Timeout: {{ check.timeout_seconds }}s |
+    Retries: {{ check.retries }} |
+    Enabled: {{ check.enabled }}
+  </p>
+</div>
+
+<div class="panel" style="margin-bottom: 16px;">
+  <h4 style="margin-top: 0;">Alert Rules</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Mode</th>
+        <th>Thresholds</th>
+        <th>Enabled</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rule in rules %}
+      <tr>
+        <td>{{ rule.id }}</td>
+        <td>{{ rule.mode }}</td>
+        <td>
+          {% if rule.mode == "consecutive_failures" %}
+            failures = {{ rule.consecutive_failures_count }}
+          {% else %}
+            latency > {{ rule.latency_ms_threshold }}ms for {{ rule.latency_run_count }} runs
+          {% endif %}
+        </td>
+        <td>{{ rule.enabled }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="muted">No alert rules.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h4 style="margin-top: 0;">Recent Results</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Started</th>
+        <th>Status</th>
+        <th>Total (ms)</th>
+        <th>Error</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for result in results %}
+      <tr>
+        <td>{{ result.started_at }}</td>
+        <td>
+          {% if result.status == "ok" %}
+            <span class="status-ok">OK</span>
+          {% else %}
+            <span class="status-fail">FAIL</span>
+          {% endif %}
+        </td>
+        <td>{{ result.timings_json.total_ms|default:"-" }}</td>
+        <td>{{ result.error_message|default:"-" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="muted">No runs yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

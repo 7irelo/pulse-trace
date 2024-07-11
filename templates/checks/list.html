@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="panel">
+  <h3 style="margin-top: 0;">Checks</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Target</th>
+        <th>Latest Status</th>
+        <th>Latest Run</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for check in checks %}
+      <tr>
+        <td><a href="{% url 'ui-check-detail' check.id %}">{{ check.name }}</a></td>
+        <td>{{ check.type|upper }}</td>
+        <td>{{ check.target }}{% if check.port %}:{{ check.port }}{% endif %}</td>
+        <td>
+          {% if check.latest_status == "ok" %}
+            <span class="status-ok">OK</span>
+          {% elif check.latest_status == "fail" %}
+            <span class="status-fail">FAIL</span>
+          {% else %}
+            <span class="muted">No data</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if check.latest_started_at %}
+            {{ check.latest_started_at }}
+          {% else %}
+            <span class="muted">Never</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted">No checks configured.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
