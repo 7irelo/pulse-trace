@@ -1,0 +1,75 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: pulsetrace
+      POSTGRES_USER: pulsetrace
+      POSTGRES_PASSWORD: pulsetrace
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulsetrace -d pulsetrace"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+
+  web:
+    build: .
+    env_file:
+      - .env.example
+    environment:
+      DJANGO_DEBUG: "1"
+      DATABASE_URL: postgres://pulsetrace:pulsetrace@db:5432/pulsetrace
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build: .
+    env_file:
+      - .env.example
+    environment:
+      DATABASE_URL: postgres://pulsetrace:pulsetrace@db:5432/pulsetrace
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    command: celery -A pulsetrace worker -l info
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  beat:
+    build: .
+    env_file:
+      - .env.example
+    environment:
+      DATABASE_URL: postgres://pulsetrace:pulsetrace@db:5432/pulsetrace
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    command: celery -A pulsetrace beat -l info
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  pgdata:
