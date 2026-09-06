@@ -33,6 +33,10 @@ The operator UI, captured from a running instance.
 
 ![PulseTrace logs](docs/screenshots/logs.jpg)
 
+**Settings** — site name, URL, time zone and default check interval.
+
+![PulseTrace settings](docs/screenshots/settings.jpg)
+
 **Public status page** — reachable without signing in.
 
 ![PulseTrace status page](docs/screenshots/status-page.jpg)
