@@ -15,31 +15,7 @@ PulseTrace is a production-oriented Django app for scheduling safe network diagn
 
 ## Screenshots
 
-The operator UI, captured from a running instance.
-
-**Dashboard** — up/down counts, 24-hour uptime, recent incidents and upcoming checks.
-
-![PulseTrace dashboard](docs/screenshots/dashboard.jpg)
-
-**Incidents** — filter by state, search, and resolve.
-
-![PulseTrace incidents](docs/screenshots/incidents.jpg)
-
-**Alerting** — notification channels and how delivery works.
-
-![PulseTrace alerting](docs/screenshots/alerting.jpg)
-
-**Logs** — recent probe results, filterable by service and outcome.
-
-![PulseTrace logs](docs/screenshots/logs.jpg)
-
-**Settings** — site name, URL, time zone and default check interval.
-
-![PulseTrace settings](docs/screenshots/settings.jpg)
-
-**Public status page** — reachable without signing in.
-
-![PulseTrace status page](docs/screenshots/status-page.jpg)
+![PulseTrace - sign-in, dashboard, checks, check detail, incidents, alerting, logs, status page and settings](docs/screenshots/pulsetrace-ui.png)
 
 ## Safety Constraints
 - No ICMP ping
