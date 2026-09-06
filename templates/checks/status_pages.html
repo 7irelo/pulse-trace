@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Status pages &middot; PulseTrace{% endblock %}
+
+{% block content %}
+<h1>Status pages</h1>
+<div class="page-sub">Public status pages to keep your users informed.</div>
+
+<div class="panel">
+  {% if pages %}
+    <div class="table-scroll">
+      <table>
+        <tr><th>Name</th><th>Title</th><th>Services</th><th>Status</th><th>Public URL</th></tr>
+        {% for page in pages %}
+          <tr>
+            <td>{{ page.name }}</td>
+            <td class="muted">{{ page.title }}</td>
+            <td class="muted">{{ page.items.count }}</td>
+            <td>
+              <span class="pill {% if page.published %}pill-ok{% else %}pill-muted{% endif %}">
+                {% if page.published %}Published{% else %}Draft{% endif %}
+              </span>
+            </td>
+            <td>
+              {% if page.published %}
+                <a href="{% url 'ui-status-public' page.slug %}">/status/{{ page.slug }}</a>
+              {% else %}
+                <span class="muted">&mdash;</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+  {% else %}
+    <p class="muted" style="margin:0">No status pages yet.</p>
+  {% endif %}
+  <p class="muted" style="margin-bottom:0">
+    Status pages are created in the <a href="/admin/checks/statuspage/">admin</a>.
+    Only published pages are reachable without signing in.
+  </p>
+</div>
+{% endblock %}

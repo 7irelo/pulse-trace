@@ -8,7 +8,34 @@ PulseTrace is a production-oriented Django app for scheduling safe network diagn
 - Schedules due checks via Celery Beat
 - Persists every run result with timings/details/errors
 - Evaluates alert rules and stores alert events
-- Exposes authenticated REST API + minimal operator UI
+- Groups alert events into operator-visible incidents
+- Delivers notifications over email, Slack, webhook and SMS
+- Publishes shareable status pages
+- Exposes an authenticated REST API and a server-rendered operator UI
+
+## Screenshots
+
+The operator UI, captured from a running instance.
+
+**Dashboard** — up/down counts, 24-hour uptime, recent incidents and upcoming checks.
+
+![PulseTrace dashboard](docs/screenshots/dashboard.jpg)
+
+**Incidents** — filter by state, search, and resolve.
+
+![PulseTrace incidents](docs/screenshots/incidents.jpg)
+
+**Alerting** — notification channels and how delivery works.
+
+![PulseTrace alerting](docs/screenshots/alerting.jpg)
+
+**Logs** — recent probe results, filterable by service and outcome.
+
+![PulseTrace logs](docs/screenshots/logs.jpg)
+
+**Public status page** — reachable without signing in.
+
+![PulseTrace status page](docs/screenshots/status-page.jpg)
 
 ## Safety Constraints
 - No ICMP ping
@@ -128,6 +155,56 @@ On state transitions, an `AlertEvent` is created (`triggered` / `resolved`).
 Optional webhook notifications are supported per rule:
 - `webhook_url` must be `http(s)`
 - hostname must match `ALERT_WEBHOOK_ALLOWLIST`
+
+### Notification channels
+
+A rule can also be attached to any number of `NotificationChannel` rows,
+which are delivered to in addition to the per-rule webhook. Per-kind settings
+live in `config_json` and are validated on save:
+
+| Kind | `config_json` | Notes |
+|---|---|---|
+| `email` | `{"recipients": ["ops@example.com"]}` | Uses Django's configured email backend |
+| `slack` | `{"webhook_url": "...", "channel": "#ops"}` | Slack incoming webhook |
+| `webhook` | `{"url": "..."}` | Same JSON payload as the per-rule webhook |
+| `sms` | `{"numbers": ["+27..."], "gateway_url": "..."}` | Posts to a generic HTTP SMS gateway |
+
+Every outbound URL — Slack, webhook and the SMS gateway — must match
+`ALERT_WEBHOOK_ALLOWLIST`, so channels do not widen the SSRF surface. Phone
+numbers must be E.164. There is no bundled SMS provider: without a
+`gateway_url` the channel logs that it is unconfigured and sends nothing.
+
+Delivery is best-effort per channel. A channel that raises is logged and
+skipped, so one broken destination cannot block the others or prevent the
+alert event from being recorded.
+
+### Incidents
+
+An `AlertEvent` is one firing of one rule. An `Incident` is the operator-facing
+grouping: a check has **at most one open incident** at a time, enforced by a
+partial unique constraint, so repeated failures extend the existing incident
+rather than creating a new one per failed probe. The original `started_at` is
+preserved when an incident is extended, so its duration reflects when the
+check actually went down.
+
+## Operator UI
+
+| Route | Page |
+|---|---|
+| `/` | Dashboard |
+| `/checks` | Check list |
+| `/checks/<id>` | Check detail and recent results |
+| `/incidents` | Incident list, filterable and searchable |
+| `/alerts` | Notification channels |
+| `/logs` | Recent probe results |
+| `/status-pages` | Status page management |
+| `/settings` | Instance settings |
+| `/status/<slug>` | **Public** status page (no login) |
+| `/accounts/login/` | Sign in |
+
+Every route except the public status page and the login page requires
+authentication. Checks, alert rules, notification channels and status pages
+are created in the Django admin.
 
 ## Observability
 - Structured JSON logs via `python-json-logger`

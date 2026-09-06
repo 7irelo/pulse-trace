@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Logs &middot; PulseTrace{% endblock %}
+
+{% block content %}
+<h1>Logs</h1>
+<div class="page-sub">Recent probe results from your services, newest first.</div>
+
+<form method="get" class="toolbar">
+  <select name="check">
+    <option value="">All services</option>
+    {% for check in checks %}
+      <option value="{{ check.id }}" {% if selected_check == check.id|stringformat:"s" %}selected{% endif %}>
+        {{ check.name }}
+      </option>
+    {% endfor %}
+  </select>
+  <select name="level">
+    <option value="">All levels</option>
+    <option value="ok" {% if level == 'ok' %}selected{% endif %}>OK</option>
+    <option value="fail" {% if level == 'fail' %}selected{% endif %}>FAIL</option>
+  </select>
+  <button class="btn btn-secondary" type="submit">Apply</button>
+  <a class="btn btn-secondary" href="{% url 'ui-logs' %}">Clear</a>
+</form>
+
+<div class="panel">
+  {% if results %}
+    <div class="table-scroll">
+      <table class="logline">
+        <tr><th>Time</th><th>Level</th><th>Service</th><th>Duration</th><th>Detail</th></tr>
+        {% for result in results %}
+          <tr>
+            <td class="muted">{{ result.started_at }}</td>
+            <td class="{% if result.status == 'ok' %}status-ok{% else %}status-fail{% endif %}">
+              {{ result.status|upper }}
+            </td>
+            <td>{{ result.check_ref.name }}</td>
+            <td class="muted">
+              {% if result.timings_json.total_ms %}{{ result.timings_json.total_ms }}ms{% else %}&mdash;{% endif %}
+            </td>
+            <td>{% if result.error_message %}{{ result.error_message }}{% else %}<span class="muted">&mdash;</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+  {% else %}
+    <p class="muted" style="margin:0">No probe results match this filter.</p>
+  {% endif %}
+</div>
+{% endblock %}

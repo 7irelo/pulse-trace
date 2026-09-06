@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Incidents &middot; PulseTrace{% endblock %}
+
+{% block content %}
+<h1>Incidents</h1>
+<div class="page-sub">View and manage monitoring incidents.</div>
+
+<div class="tabs">
+  <a href="{% url 'ui-incidents' %}" class="{% if not state %}active{% endif %}">All ({{ counts.all }})</a>
+  <a href="?state=open" class="{% if state == 'open' %}active{% endif %}">Open ({{ counts.open }})</a>
+  <a href="?state=resolved" class="{% if state == 'resolved' %}active{% endif %}">Resolved ({{ counts.resolved }})</a>
+</div>
+
+<form method="get" class="toolbar">
+  {% if state %}<input type="hidden" name="state" value="{{ state }}">{% endif %}
+  <input type="text" name="q" value="{{ q }}" placeholder="Search incidents...">
+  <button class="btn btn-secondary" type="submit">Search</button>
+</form>
+
+<div class="panel">
+  {% if incidents %}
+    <div class="table-scroll">
+      <table>
+        <tr>
+          <th>Status</th><th>Service</th><th>Severity</th>
+          <th>Message</th><th>Started at</th><th>Duration</th><th></th>
+        </tr>
+        {% for incident in incidents %}
+          <tr>
+            <td>
+              <span class="pill {% if incident.state == 'open' %}pill-fail{% else %}pill-ok{% endif %}">
+                {{ incident.get_state_display }}
+              </span>
+            </td>
+            <td><a href="{% url 'ui-check-detail' incident.check_ref.id %}">{{ incident.check_ref.name }}</a></td>
+            <td>
+              <span class="pill {% if incident.severity == 'critical' %}pill-fail{% else %}pill-warn{% endif %}">
+                {{ incident.get_severity_display }}
+              </span>
+            </td>
+            <td>{{ incident.message }}</td>
+            <td class="muted">{{ incident.started_at }}</td>
+            <td class="muted">{{ incident.duration }}</td>
+            <td>
+              {% if incident.state == 'open' %}
+                <form method="post" action="{% url 'ui-incident-resolve' incident.id %}">
+                  {% csrf_token %}
+                  <button class="btn btn-secondary" type="submit">Resolve</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <p class="muted" style="margin-bottom:0">
+        Page {{ page_obj.number }} of {{ paginator.num_pages }}
+        {% if page_obj.has_previous %}
+          &middot; <a href="?page={{ page_obj.previous_page_number }}{% if state %}&state={{ state }}{% endif %}{% if q %}&q={{ q }}{% endif %}">Previous</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          &middot; <a href="?page={{ page_obj.next_page_number }}{% if state %}&state={{ state }}{% endif %}{% if q %}&q={{ q }}{% endif %}">Next</a>
+        {% endif %}
+      </p>
+    {% endif %}
+  {% else %}
+    <p class="muted" style="margin:0">No incidents match this filter.</p>
+  {% endif %}
+</div>
+{% endblock %}

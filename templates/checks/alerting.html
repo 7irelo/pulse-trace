@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Alerting &middot; PulseTrace{% endblock %}
+
+{% block content %}
+<h1>Alerting</h1>
+<div class="page-sub">Configure how and when you receive notifications.</div>
+
+<div class="panel">
+  <h2>Channels</h2>
+  {% if channels %}
+    <div class="table-scroll">
+      <table>
+        <tr><th>Name</th><th>Kind</th><th>Destination</th><th>Rules</th><th>Status</th></tr>
+        {% for channel in channels %}
+          <tr>
+            <td>{{ channel.name }}</td>
+            <td class="muted">{{ channel.get_kind_display }}</td>
+            <td class="muted">
+              {% if channel.kind == 'email' %}
+                {{ channel.config_json.recipients|join:", " }}
+              {% elif channel.kind == 'slack' %}
+                {{ channel.config_json.channel|default:"(default channel)" }}
+              {% elif channel.kind == 'webhook' %}
+                {{ channel.config_json.url }}
+              {% elif channel.kind == 'sms' %}
+                {{ channel.config_json.numbers|join:", " }}
+              {% endif %}
+            </td>
+            <td class="muted">{{ channel.rules.count }}</td>
+            <td>
+              <span class="pill {% if channel.enabled %}pill-ok{% else %}pill-muted{% endif %}">
+                {% if channel.enabled %}Active{% else %}Inactive{% endif %}
+              </span>
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">No notification channels configured yet.</p>
+  {% endif %}
+  <p class="muted" style="margin-bottom:0">
+    Channels are created in the <a href="/admin/checks/notificationchannel/">admin</a>.
+    Supported kinds: {% for value, label in kinds %}{{ label }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+  </p>
+</div>
+
+<div class="panel">
+  <h2>How delivery works</h2>
+  <p class="muted" style="margin-top:0">
+    An alert rule fires when its condition is met, which records an alert event
+    and opens an incident. The event is then delivered to every enabled channel
+    attached to that rule. A channel that fails is logged and skipped, so one
+    broken destination cannot block the others.
+  </p>
+  <p class="muted" style="margin-bottom:0">
+    Outbound URLs (Slack, webhook and the SMS gateway) must match
+    <code>ALERT_WEBHOOK_ALLOWLIST</code>, and are refused otherwise.
+  </p>
+</div>
+{% endblock %}

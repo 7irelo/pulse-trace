@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Dashboard &middot; PulseTrace{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<div class="page-sub">Overview of your services and monitoring status.</div>
+
+<div class="stat-row">
+  <div class="stat">
+    <div class="value">{{ total_checks }}</div>
+    <div class="label">Total checks</div>
+  </div>
+  <div class="stat">
+    <div class="value status-ok">{{ up_count }}</div>
+    <div class="label">Up</div>
+  </div>
+  <div class="stat">
+    <div class="value {% if down_count %}status-fail{% endif %}">{{ down_count }}</div>
+    <div class="label">Down</div>
+  </div>
+  <div class="stat">
+    <div class="value">{% if uptime is None %}&mdash;{% else %}{{ uptime }}%{% endif %}</div>
+    <div class="label">Uptime (24h)</div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Uptime overview &mdash; last 24 hours</h2>
+  {% if uptime_series %}
+    <div class="sparkline">
+      {% for point in uptime_series %}
+        {% if point.uptime is None %}
+          <div class="bar none" style="height: 4px" title="{{ point.hour }}: no data"></div>
+        {% else %}
+          <div class="bar {% if point.uptime < 100 %}bad{% endif %}"
+               style="height: {{ point.uptime }}%"
+               title="{{ point.hour }}: {{ point.uptime }}%"></div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No probe results recorded yet.</p>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <h2>Recent incidents{% if open_incident_count %} &mdash; {{ open_incident_count }} open{% endif %}</h2>
+  {% if recent_incidents %}
+    <div class="table-scroll">
+      <table>
+        <tr><th>Status</th><th>Service</th><th>Message</th><th>Started</th></tr>
+        {% for incident in recent_incidents %}
+          <tr>
+            <td>
+              <span class="pill {% if incident.state == 'open' %}pill-fail{% else %}pill-ok{% endif %}">
+                {{ incident.get_state_display }}
+              </span>
+            </td>
+            <td><a href="{% url 'ui-check-detail' incident.check_ref.id %}">{{ incident.check_ref.name }}</a></td>
+            <td>{{ incident.message }}</td>
+            <td class="muted">{{ incident.started_at }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <p style="margin-bottom:0"><a href="{% url 'ui-incidents' %}">View all incidents</a></p>
+  {% else %}
+    <p class="muted">No incidents recorded.</p>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <h2>Upcoming checks</h2>
+  {% if upcoming_checks %}
+    <table>
+      <tr><th>Check</th><th>Type</th><th>Every</th><th>Next run</th></tr>
+      {% for item in upcoming_checks %}
+        <tr>
+          <td><a href="{% url 'ui-check-detail' item.check.id %}">{{ item.check.name }}</a></td>
+          <td class="muted">{{ item.check.get_type_display }}</td>
+          <td class="muted">{{ item.check.frequency_seconds }}s</td>
+          <td class="muted">{{ item.due_at }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p class="muted">No enabled checks.</p>
+  {% endif %}
+</div>
+{% endblock %}

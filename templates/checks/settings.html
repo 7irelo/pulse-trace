@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Settings &middot; PulseTrace{% endblock %}
+
+{% block content %}
+<h1>Settings</h1>
+<div class="page-sub">Manage your application settings.</div>
+
+<div class="panel" style="max-width: 560px;">
+  <h2>General</h2>
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="field">
+      <label for="site_name">Site name</label>
+      <input type="text" id="site_name" name="site_name" value="{{ settings_row.site_name }}">
+      {% if errors.site_name %}<div class="error">{{ errors.site_name|join:" " }}</div>{% endif %}
+    </div>
+
+    <div class="field">
+      <label for="site_url">Site URL</label>
+      <input type="url" id="site_url" name="site_url" value="{{ settings_row.site_url }}"
+             placeholder="https://pulse-trace.example.com">
+      {% if errors.site_url %}<div class="error">{{ errors.site_url|join:" " }}</div>{% endif %}
+    </div>
+
+    <div class="field">
+      <label for="timezone_name">Time zone</label>
+      <select id="timezone_name" name="timezone_name">
+        {% for tz in timezones %}
+          <option value="{{ tz }}" {% if settings_row.timezone_name == tz %}selected{% endif %}>{{ tz }}</option>
+        {% endfor %}
+      </select>
+      {% if errors.timezone_name %}<div class="error">{{ errors.timezone_name|join:" " }}</div>{% endif %}
+    </div>
+
+    <div class="field">
+      <label for="default_check_interval_seconds">Default check interval (seconds)</label>
+      <input type="number" id="default_check_interval_seconds"
+             name="default_check_interval_seconds" min="30" max="86400"
+             value="{{ settings_row.default_check_interval_seconds }}">
+      {% if errors.default_check_interval_seconds %}
+        <div class="error">{{ errors.default_check_interval_seconds|join:" " }}</div>
+      {% endif %}
+    </div>
+
+    <button class="btn" type="submit">Save changes</button>
+  </form>
+</div>
+
+<div class="panel" style="max-width: 560px;">
+  <h2>Elsewhere</h2>
+  <p class="muted" style="margin-top:0">
+    Checks, alert rules, notification channels and status pages are managed in
+    the <a href="/admin/">admin</a>. Probe scheduling intervals come from each
+    check's own frequency; the default above only seeds new checks.
+  </p>
+</div>
+{% endblock %}

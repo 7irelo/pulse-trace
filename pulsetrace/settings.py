@@ -67,6 +67,12 @@ else:
         }
     }
 
+# django.contrib.auth.urls is wired up in pulsetrace/urls.py; without these the
+# default post-login redirect is /accounts/profile/, which does not exist.
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "ui-dashboard"
+LOGOUT_REDIRECT_URL = "login"
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},

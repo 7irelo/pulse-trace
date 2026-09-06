@@ -5,6 +5,8 @@ import httpx
 from django.conf import settings
 
 from apps.checks.models import AlertEvent, AlertRule, CheckResult
+from apps.checks.services.incidents import sync_incident_for_event
+from apps.checks.services.notifications import notify_channels
 from apps.checks.validators import is_webhook_allowed
 
 logger = logging.getLogger(__name__)
@@ -27,7 +29,7 @@ def evaluate_alerts_for_result(result):
                 message=message,
                 details_json={"latest_result_id": result.id},
             )
-            _send_webhook_if_enabled(rule, event)
+            _dispatch(rule, event)
 
         if not should_trigger and currently_triggered:
             event = AlertEvent.objects.create(
@@ -37,7 +39,22 @@ def evaluate_alerts_for_result(result):
                 message=f"Alert resolved for rule {rule.id}.",
                 details_json={"latest_result_id": result.id},
             )
-            _send_webhook_if_enabled(rule, event)
+            _dispatch(rule, event)
+
+
+def _dispatch(rule, event):
+    """Record the incident and fan the event out to every destination.
+
+    Incident bookkeeping runs first so the operator-visible state is correct
+    even if every delivery attempt fails.
+    """
+    try:
+        sync_incident_for_event(event)
+    except Exception:
+        logger.exception("Failed to sync incident", extra={"event_id": event.id})
+
+    _send_webhook_if_enabled(rule, event)
+    notify_channels(rule, event)
 
 
 def _rule_triggered(check_id, rule):

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page.title }}</title>
+    <style>
+      :root {
+        --bg: #f7f9fc;
+        --panel: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --ok: #047857;
+        --ok-bg: #ecfdf5;
+        --fail: #b91c1c;
+        --fail-bg: #fef2f2;
+        --border: #dbe2ea;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        color: var(--text);
+        background: var(--bg);
+      }
+      .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px; }
+      .brand { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+      .brand span { color: #2563eb; }
+      .banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 20px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        margin-bottom: 24px;
+      }
+      .banner.ok { background: var(--ok-bg); border-color: #a7f3d0; }
+      .banner.bad { background: var(--fail-bg); border-color: #fecaca; }
+      .banner h1 { font-size: 18px; margin: 0; }
+      .banner .sub { color: var(--muted); font-size: 13px; }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--border);
+        font-size: 15px;
+      }
+      .row:last-child { border-bottom: 0; }
+      .status-ok { color: var(--ok); font-weight: 600; }
+      .status-fail { color: var(--fail); font-weight: 600; }
+      .muted { color: var(--muted); font-size: 13px; }
+      footer { margin-top: 28px; color: var(--muted); font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="brand">Pulse<span>Trace</span></div>
+
+      <div class="banner {% if all_operational %}ok{% else %}bad{% endif %}">
+        <div>
+          <h1>
+            {% if all_operational %}
+              All systems operational
+            {% else %}
+              Some systems are experiencing issues
+            {% endif %}
+          </h1>
+          <div class="sub">Last updated {{ updated_at }}</div>
+        </div>
+      </div>
+
+      {% if page.description %}
+        <p class="muted">{{ page.description }}</p>
+      {% endif %}
+
+      <div class="panel">
+        {% for row in rows %}
+          <div class="row">
+            <div>
+              {{ row.label }}
+              {% if row.uptime is not None %}
+                <div class="muted">{{ row.uptime }}% uptime (24h)</div>
+              {% endif %}
+            </div>
+            <div>
+              {% if row.status == 'ok' %}
+                <span class="status-ok">Operational</span>
+              {% elif row.status == 'fail' %}
+                <span class="status-fail">Outage</span>
+              {% else %}
+                <span class="muted">No data</span>
+              {% endif %}
+            </div>
+          </div>
+        {% empty %}
+          <div class="row"><span class="muted">No services listed on this page.</span></div>
+        {% endfor %}
+      </div>
+
+      <footer>Powered by PulseTrace</footer>
+    </div>
+  </body>
+</html>

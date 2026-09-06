@@ -135,6 +135,7 @@ class CheckListPageView(LoginRequiredMixin, ListView):
     model = Check
     template_name = "checks/list.html"
     context_object_name = "checks"
+    extra_context = {"nav": "checks"}
 
     def get_queryset(self):
         return checks_with_latest_queryset().order_by("id")
@@ -144,6 +145,7 @@ class CheckDetailPageView(LoginRequiredMixin, DetailView):
     model = Check
     template_name = "checks/detail.html"
     context_object_name = "check"
+    extra_context = {"nav": "checks"}
 
     def get_object(self, queryset=None):
         return get_object_or_404(Check, pk=self.kwargs["pk"])

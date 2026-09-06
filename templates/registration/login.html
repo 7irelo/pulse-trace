@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in &middot; PulseTrace</title>
+    <style>
+      :root {
+        --panel: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #dbe2ea;
+        --accent: #1d4ed8;
+        --fail: #b91c1c;
+        --fail-bg: #fef2f2;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        color: var(--text);
+        background: #0b1220;
+      }
+      .split { display: flex; width: 100%; }
+      .pitch {
+        flex: 1 1 50%;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        padding: 48px;
+        color: #e2e8f0;
+        background:
+          radial-gradient(circle at 30% 20%, #1e3a8a 0%, transparent 55%),
+          #0b1220;
+      }
+      .pitch h1 { font-size: 30px; margin: 0 0 10px; color: #fff; }
+      .pitch h1 span { color: #60a5fa; }
+      .pitch p { color: #94a3b8; max-width: 380px; line-height: 1.6; }
+      .pitch .uptime { margin-top: 36px; }
+      .pitch .uptime .value { font-size: 40px; font-weight: 700; color: #fff; }
+      .pitch .uptime .label { color: #94a3b8; font-size: 14px; }
+      .formside {
+        flex: 1 1 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f7f9fc;
+        padding: 24px;
+      }
+      .card {
+        width: 100%;
+        max-width: 360px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 28px;
+      }
+      .card h2 { margin: 0 0 4px; font-size: 20px; }
+      .card .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+      .field { margin-bottom: 14px; }
+      .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+      .field input {
+        width: 100%;
+        padding: 9px 11px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+      .btn {
+        width: 100%;
+        padding: 10px;
+        border-radius: 7px;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: #fff;
+        font-size: 15px;
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .errors {
+        background: var(--fail-bg);
+        color: var(--fail);
+        border-radius: 7px;
+        padding: 10px 12px;
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+      .errors ul { margin: 0; padding-left: 18px; }
+      .muted { color: var(--muted); font-size: 13px; }
+      @media (min-width: 900px) { .pitch { display: flex; } }
+    </style>
+  </head>
+  <body>
+    <div class="split">
+      <section class="pitch">
+        <h1>Pulse<span>Trace</span></h1>
+        <p>
+          Scheduled DNS, TCP, TLS and HTTP probes with per-stage latency
+          breakdowns, alert rules and incident tracking.
+        </p>
+        <div class="uptime">
+          <div class="value">Monitor. Alert.</div>
+          <div class="label">Because downtime shouldn't be a surprise.</div>
+        </div>
+      </section>
+
+      <section class="formside">
+        <div class="card">
+          <h2>Sign in</h2>
+          <div class="sub">Access your monitoring dashboard.</div>
+
+          {% if form.errors %}
+            <div class="errors">
+              Your username and password didn't match. Please try again.
+            </div>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="field">
+              <label for="{{ form.username.id_for_label }}">Username</label>
+              {{ form.username }}
+            </div>
+            <div class="field">
+              <label for="{{ form.password.id_for_label }}">Password</label>
+              {{ form.password }}
+            </div>
+            <input type="hidden" name="next" value="{{ next }}">
+            <button class="btn" type="submit">Sign in</button>
+          </form>
+
+          <p class="muted" style="margin-bottom:0">
+            Accounts are created by an administrator.
+          </p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

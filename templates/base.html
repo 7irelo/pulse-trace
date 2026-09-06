@@ -3,87 +3,191 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PulseTrace</title>
+    <title>{% block title %}PulseTrace{% endblock %}</title>
     <style>
       :root {
         --bg: #f7f9fc;
         --panel: #ffffff;
+        --sidebar: #101828;
+        --sidebar-text: #cbd5e1;
+        --sidebar-active: #1d4ed8;
         --text: #1f2937;
         --muted: #6b7280;
         --ok: #047857;
+        --ok-bg: #ecfdf5;
         --fail: #b91c1c;
+        --fail-bg: #fef2f2;
+        --warn: #b45309;
+        --warn-bg: #fffbeb;
         --border: #dbe2ea;
+        --accent: #1d4ed8;
       }
+      * { box-sizing: border-box; }
       body {
         margin: 0;
         font-family: "Segoe UI", Tahoma, sans-serif;
         color: var(--text);
-        background: radial-gradient(circle at top right, #e8f1ff 0%, var(--bg) 45%);
+        background: var(--bg);
       }
-      .container {
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 20px;
+      .layout { display: flex; min-height: 100vh; }
+      .sidebar {
+        width: 220px;
+        flex: 0 0 220px;
+        background: var(--sidebar);
+        color: var(--sidebar-text);
+        padding: 18px 0;
       }
+      .brand {
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        padding: 0 18px 18px;
+      }
+      .brand span { color: #60a5fa; }
+      .nav a {
+        display: block;
+        padding: 10px 18px;
+        color: var(--sidebar-text);
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .nav a:hover { background: #1c2637; color: #fff; }
+      .nav a.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
+      .main { flex: 1; min-width: 0; }
       .topbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 16px;
+        padding: 14px 24px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
       }
+      .content { padding: 24px; }
+      h1 { font-size: 22px; margin: 0 0 4px; }
+      .page-sub { color: var(--muted); margin-bottom: 20px; font-size: 14px; }
       .panel {
         background: var(--panel);
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 16px;
+        margin-bottom: 20px;
       }
-      table {
-        width: 100%;
-        border-collapse: collapse;
+      .panel h2 { font-size: 15px; margin: 0 0 12px; }
+      .stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+      .stat {
+        flex: 1 1 160px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
       }
-      th, td {
-        text-align: left;
-        padding: 10px 8px;
-        border-bottom: 1px solid var(--border);
+      .stat .value { font-size: 26px; font-weight: 700; }
+      .stat .label { color: var(--muted); font-size: 13px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); }
+      th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+      .muted { color: var(--muted); }
+      .pill {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
       }
-      .muted {
+      .pill-ok { color: var(--ok); background: var(--ok-bg); }
+      .pill-fail { color: var(--fail); background: var(--fail-bg); }
+      .pill-warn { color: var(--warn); background: var(--warn-bg); }
+      .pill-muted { color: var(--muted); background: #f3f4f6; }
+      .status-ok { color: var(--ok); font-weight: 600; }
+      .status-fail { color: var(--fail); font-weight: 600; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+      .tabs a {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
         color: var(--muted);
+        border: 1px solid transparent;
       }
-      .status-ok {
+      .tabs a.active { color: var(--accent); border-color: var(--border); background: var(--panel); font-weight: 600; }
+      .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+      input[type=text], input[type=url], input[type=number], select {
+        padding: 7px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+      .btn {
+        padding: 7px 14px;
+        border-radius: 6px;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: #fff;
+        font-size: 14px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .btn-secondary { background: var(--panel); color: var(--text); border-color: var(--border); }
+      .messages { list-style: none; padding: 0; margin: 0 0 16px; }
+      .messages li {
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--ok-bg);
         color: var(--ok);
-        font-weight: 600;
+        font-size: 14px;
       }
-      .status-fail {
-        color: var(--fail);
-        font-weight: 600;
-      }
-      a {
-        color: #1d4ed8;
-        text-decoration: none;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
+      .field { margin-bottom: 14px; max-width: 420px; }
+      .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+      .field input, .field select { width: 100%; }
+      .field .error { color: var(--fail); font-size: 13px; margin-top: 4px; }
+      .logline { font-family: Consolas, "Courier New", monospace; font-size: 13px; }
+      .sparkline { display: flex; align-items: flex-end; gap: 2px; height: 70px; }
+      .sparkline .bar { flex: 1; background: var(--ok); border-radius: 2px 2px 0 0; min-height: 2px; }
+      .sparkline .bar.none { background: #e5e7eb; }
+      .sparkline .bar.bad { background: var(--fail); }
+      .table-scroll { overflow-x: auto; }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="topbar">
-        <div>
-          <h2 style="margin: 0;">PulseTrace</h2>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">Pulse<span>Trace</span></div>
+        <nav class="nav">
+          <a href="{% url 'ui-dashboard' %}" class="{% if nav == 'dashboard' %}active{% endif %}">Dashboard</a>
+          <a href="{% url 'ui-check-list' %}" class="{% if nav == 'checks' %}active{% endif %}">Checks</a>
+          <a href="{% url 'ui-incidents' %}" class="{% if nav == 'incidents' %}active{% endif %}">Incidents</a>
+          <a href="{% url 'ui-alerts' %}" class="{% if nav == 'alerts' %}active{% endif %}">Alerts</a>
+          <a href="{% url 'ui-status-pages' %}" class="{% if nav == 'status' %}active{% endif %}">Status Pages</a>
+          <a href="{% url 'ui-logs' %}" class="{% if nav == 'logs' %}active{% endif %}">Logs</a>
+          <a href="{% url 'ui-settings' %}" class="{% if nav == 'settings' %}active{% endif %}">Settings</a>
+        </nav>
+      </aside>
+
+      <div class="main">
+        <div class="topbar">
           <div class="muted">Network checks and diagnostics</div>
+          <div>
+            {% if user.is_authenticated %}
+              <span class="muted">{{ user.username }}</span>
+              &middot; <a href="{% url 'logout' %}">Logout</a>
+              &middot; <a href="/admin/">Admin</a>
+            {% else %}
+              <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+          </div>
         </div>
-        <div>
-          {% if user.is_authenticated %}
-            <span class="muted">Signed in as {{ user.username }}</span>
-            | <a href="{% url 'logout' %}">Logout</a>
-            | <a href="/admin/">Admin</a>
-          {% else %}
-            <a href="{% url 'login' %}">Login</a>
+
+        <div class="content">
+          {% if messages %}
+            <ul class="messages">
+              {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+            </ul>
           {% endif %}
+          {% block content %}{% endblock %}
         </div>
       </div>
-      {% block content %}{% endblock %}
     </div>
   </body>
-  </html>
+</html>
